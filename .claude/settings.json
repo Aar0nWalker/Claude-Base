@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Bash(git *)",
+      "Bash(docker *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(pnpm *)",
+      "Bash(python *)",
+      "Bash(rtk *)",
+      "WebSearch"
+    ],
+    "deny": []
+  }
+}
