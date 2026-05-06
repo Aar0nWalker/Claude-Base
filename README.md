@@ -6,6 +6,10 @@
 
 **[Andrej Karpathy Skills](https://github.com/forrestchang/andrej-karpathy-skills)** — глобальный `CLAUDE.md`, который улучшает поведение клода при работе с кодом (клод лучше кодит)
 
+**[WinSCP](https://winscp.net)** — SCP/SFTP-клиент для деплоя файлов на сервер (нужен для `deploy.bat`)
+
+**[PuTTY](https://www.putty.org)** — SSH-клиент для подключения к серверу (Windows)
+
 ### Core
 
 **`CLAUDE.md`** — читается самим клодом при запуске сессии, является системным промтом в рамках этой сессии
@@ -30,6 +34,10 @@
 ### Запуск
 
 Скопировать репо в папку нового проекта, открыть клод и написать:
+
+```
+git clone https://github.com/Aar0nWalker/Claude-Base .
+```
 
 ```
 follow init.md
