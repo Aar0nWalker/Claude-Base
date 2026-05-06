@@ -52,7 +52,31 @@ Read each file, fill every `TODO` and `[Project Name]` placeholder.
 
 ---
 
-## Step 4 — Confirm and delete
+## Step 4 — Write MVP plan
+
+Write `MVP.md` in the project root. Structure:
+
+```
+# [Project Name] — MVP Plan
+
+## Goal
+One sentence: what the MVP proves or delivers.
+
+## Scope
+Bulleted list of features included in MVP.
+
+## Out of scope
+Bulleted list from Q3 (off-limits / deferred).
+
+## Milestones
+Ordered list of implementation phases, each with a 1-line description.
+```
+
+Base content on Q2 (mission) and Q3 (off-limits). Keep it short and concrete — no fluff.
+
+---
+
+## Step 5 — Confirm and delete
 
 After writing all files, output a single summary:
 
@@ -62,6 +86,7 @@ After writing all files, output a single summary:
 ✓ STACK.md  (defaults reference — do not delete)
 ✓ start.sh / start.bat
 ✓ install.sh
+✓ MVP.md
 — deploy.bat (fill WINSCP_PATH manually)
 
 Project: [name]
