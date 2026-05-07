@@ -11,6 +11,10 @@ Ask the user ALL of the following questions in a single message, numbered list. 
 1. **Project name** — used in file headers, script titles, nginx conf name.
 2. **Mission** — 1-2 sentences: what does it do and who uses it?
 3. **Off-limits** — deferred features or hard constraints for this MVP. (or "none")
+4. **Server** — SSH address for deploy (e.g. `root@1.2.3.4`).
+5. **Remote project path** — folder on server (e.g. `/root/myproject`).
+6. **WinSCP session name** — name of the saved session in WinSCP app.
+7. **Folders to sync** — which local dirs to upload (e.g. `backend`, `frontend`). Files `.env`, `docker-compose.yml`, `install.sh`, `start.sh` are always included.
 
 ---
 
@@ -47,8 +51,106 @@ Read each file, fill every `TODO` and `[Project Name]` placeholder.
 ### STACK.md
 - No changes needed — it is the permanent defaults reference.
 
+### .env (create new file)
+Create `.env` in project root with deploy variables:
+
+```
+DEPLOY_SERVER=<Q4>
+DEPLOY_WINSCP_SITE=<Q6>
+DEPLOY_PATH=<Q5>
+```
+
+Replace `<Q4>` with Q4 answer, `<Q5>` with Q5 answer, `<Q6>` with Q6 answer.
+
 ### deploy.bat
-- No changes needed — user fills `WINSCP_PATH` manually.
+Update to read `DEPLOY_WINSCP_SITE` from `.env` and pass it to WinSCP as parameter:
+
+```batch
+@echo off
+
+for /f "usebackq tokens=1,* delims==" %%a in ("%~dp0.env") do (
+    if "%%a"=="DEPLOY_WINSCP_SITE" set "DEPLOY_WINSCP_SITE=%%b"
+    if "%%a"=="DEPLOY_PATH" set "DEPLOY_PATH=%%b"
+)
+
+del "%~dp0deploy.log" 2>nul
+
+echo [1/2] Uploading files...
+"TODO: C:\path\to\WinSCP.com" /script="%~dp0deploy.winscp" /parameter "%DEPLOY_WINSCP_SITE%" "%DEPLOY_PATH%" /log="%~dp0deploy.log" /console
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [ERROR] Deploy failed. See deploy.log for details.
+    exit /b 1
+)
+
+echo.
+echo [OK] Deploy complete.
+```
+
+### deploy.ps1 (create new file)
+Generate `deploy.ps1` in project root using this exact structure:
+
+```powershell
+$ErrorActionPreference = "Stop"
+$plink  = "C:\Program Files\PuTTY\plink.exe"  # TODO: adjust if PuTTY installed elsewhere
+$winscp = "TODO: C:\path\to\WinSCP.com"
+
+# Read deploy vars from .env
+Get-Content "$PSScriptRoot\.env" | Where-Object { $_ -match '^[^#].+=' } | ForEach-Object {
+    $k, $v = $_ -split '=', 2
+    Set-Variable -Name $k.Trim() -Value $v.Trim()
+}
+
+Remove-Item "$PSScriptRoot\deploy.log" -ErrorAction SilentlyContinue
+
+Write-Host "[1/2] Uploading files..."
+& $winscp /script="$PSScriptRoot\deploy.winscp" /parameter "$DEPLOY_WINSCP_SITE" "$DEPLOY_PATH" /log="$PSScriptRoot\deploy.log"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "[ERROR] Upload failed. See deploy.log for details."
+    exit 1
+}
+Write-Host "[1/2] Upload complete."
+Write-Host ""
+
+Write-Host "[2/2] Rebuilding on server (this may take a few minutes)..."
+$rebuild_cmd = "cd $DEPLOY_PATH && BUILDKIT_PROGRESS=plain bash start.sh --rebuild > /tmp/deploy_build.log 2>&1; EC=`$?; cat /tmp/deploy_build.log; exit `$EC"
+& $plink -ssh $DEPLOY_SERVER -batch $rebuild_cmd
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "[ERROR] Rebuild failed. Fetching service logs..."
+    Write-Host ""
+    & $plink -ssh $DEPLOY_SERVER -batch "cd $DEPLOY_PATH && docker compose logs --tail=100 --no-color 2>&1"
+    exit 1
+}
+
+Write-Host ""
+Write-Host "[OK] Deploy complete."
+```
+
+Leave `$winscp` as TODO — user fills it.
+
+### deploy.winscp (create new file)
+Generate `deploy.winscp` in project root:
+
+```
+option batch abort
+option confirm off
+open %1%
+
+<sync lines for each folder from Q7>
+put "<LOCAL_PATH>\.env"               %2%/
+put "<LOCAL_PATH>\docker-compose.yml" %2%/
+put "<LOCAL_PATH>\install.sh"         %2%/
+put "<LOCAL_PATH>\start.sh"           %2%/
+
+exit
+```
+
+- `%1%` = session name (`DEPLOY_WINSCP_SITE` from `.env`), passed via `/parameter`.
+- `%2%` = remote path (`DEPLOY_PATH` from `.env`), passed as second `/parameter` value.
+- For each folder in Q7: `synchronize remote -delete "<LOCAL_PATH>\<folder>" %2%/<folder>`
+- `<LOCAL_PATH>` = absolute local project path (ask user if not obvious from context — write as literal path).
 
 ---
 
@@ -87,7 +189,10 @@ After writing all files, output a single summary:
 ✓ start.sh / start.bat
 ✓ install.sh
 ✓ MVP.md
-— deploy.bat (fill WINSCP_PATH manually)
+✓ .env  (fill other app secrets as needed)
+✓ deploy.ps1  (fill $winscp path, adjust $plink if non-default)
+✓ deploy.winscp
+✓ deploy.bat  (fill WinSCP.com path)
 
 Project: [name]
 ```
