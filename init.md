@@ -113,15 +113,32 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[1/2] Upload complete."
 Write-Host ""
 
-Write-Host "[2/2] Rebuilding on server (this may take a few minutes)..."
-$rebuild_cmd = "cd $DEPLOY_PATH && BUILDKIT_PROGRESS=plain bash start.sh --rebuild > /tmp/deploy_build.log 2>&1; EC=`$?; cat /tmp/deploy_build.log; exit `$EC"
-& $plink -ssh $DEPLOY_SERVER -batch $rebuild_cmd
-if ($LASTEXITCODE -ne 0) {
+Write-Host "[2/2] Deploying on server..."
+$is_fresh = (& $plink -ssh $DEPLOY_SERVER -batch "command -v docker &>/dev/null && echo NO || echo YES").Trim()
+
+if ($is_fresh -eq "YES") {
+    Write-Host "First deploy — running install.sh (may take 5-10 min)..."
+    & $plink -ssh $DEPLOY_SERVER -batch "chmod +x $DEPLOY_PATH/*.sh && echo Y | bash $DEPLOY_PATH/install.sh"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "[ERROR] install.sh failed."
+        exit 1
+    }
     Write-Host ""
-    Write-Host "[ERROR] Rebuild failed. Fetching service logs..."
-    Write-Host ""
-    & $plink -ssh $DEPLOY_SERVER -batch "cd $DEPLOY_PATH && docker compose logs --tail=100 --no-color 2>&1"
-    exit 1
+    Write-Host "Starting project..."
+    & $plink -ssh $DEPLOY_SERVER -batch "cd $DEPLOY_PATH && docker compose up -d"
+} else {
+    Write-Host "Rebuilding on server (this may take a few minutes)..."
+    & $plink -ssh $DEPLOY_SERVER -batch @"
+cd $DEPLOY_PATH && BUILDKIT_PROGRESS=plain bash start.sh --rebuild > /tmp/deploy_build.log 2>&1; EC=`$?; cat /tmp/deploy_build.log; exit `$EC
+"@
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "[ERROR] Rebuild failed. Fetching service logs..."
+        Write-Host ""
+        & $plink -ssh $DEPLOY_SERVER -batch "cd $DEPLOY_PATH && docker compose logs --tail=100 --no-color 2>&1"
+        exit 1
+    }
 }
 
 Write-Host ""
