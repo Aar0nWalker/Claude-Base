@@ -39,6 +39,12 @@
 git clone https://github.com/Aar0nWalker/Claude-Base .
 ```
 
+Удалить историю шаблона и начать свой репозиторий:
+
+```
+Remove-Item -Recurse -Force .git; git init
+```
+
 Открыть клод и написать:
 
 ```

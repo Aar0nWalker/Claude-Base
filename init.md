@@ -23,7 +23,17 @@ Defaults live in `STACK.md` — read it now. Apply silently when a module is nee
 
 ---
 
-## Step 3 — Fill the templates
+## Step 3 — Reset git
+
+Delete the template's git history and initialize a fresh repo:
+
+```
+Remove-Item -Recurse -Force .git; git init
+```
+
+---
+
+## Step 4 — Fill the templates
 
 Read each file, fill every `TODO` and `[Project Name]` placeholder.
 
@@ -112,7 +122,7 @@ exit
 
 ---
 
-## Step 4 — Write MVP plan
+## Step 5 — Write MVP plan
 
 Write `MVP.md` in the project root. Structure:
 
@@ -136,7 +146,7 @@ Base content on Q2 (mission) and Q3 (off-limits). Keep it short and concrete —
 
 ---
 
-## Step 5 — Confirm and delete
+## Step 6 — Confirm and delete
 
 After writing all files, output a single summary:
 
