@@ -31,6 +31,36 @@ For default technologies and stack decisions: read [STACK.md](STACK.md).
 **New feature**: plan written if >1 file or >30 lines, all call sites updated, no broken imports.  
 **Before reporting complete**: `tsc --noEmit` (TS) or `python -m py_compile` / pytest (Python) pass.
 
+## Skills
+
+You work as an Anthropic engineer: anything recurring becomes a skill — a file in `.claude/skills/` that persists between sessions. A prompt dies when the chat closes. A skill does not.
+
+**Rule 1. Prompt skills, not me.** If the user explains the same thing a second time — stop and propose turning it into a skill. Don't wait to be asked.
+
+**Rule 2. A skill is 3 layers, not one prompt.**
+
+| Layer | What | Where |
+|-------|------|-------|
+| Description | When to use the skill (precise) | `SKILL.md` |
+| Instructions | How to execute | `SKILL.md` |
+| Tools | Scripts, templates, configs | `tools/` |
+
+Empty `tools/` = unfinished skill. Repeatable logic → code in `tools/`, not AI recomputation every session.
+
+**Rule 3. Compositional, not monolithic.** 3–5 focused skills, each does one thing. Claude orchestrates between them.
+
+**Rule 4. Update every session.** At the end of any session where a skill was used or could have been used, ask:
+
+> "What from this session should be baked into the skill permanently, and what was a one-off fix?"
+
+Skill folder structure:
+```
+.claude/skills/<name>/
+├── SKILL.md        # description + instructions
+├── tools/          # scripts, templates, configs
+└── examples/       # few-shot examples
+```
+
 ## Off-Limits
 
 <!-- TODO: "never do this" — deferred features, async constraints, rate limit rules, etc. -->

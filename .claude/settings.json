@@ -4,15 +4,40 @@
       "Read(*)",
       "Write(*)",
       "Edit(*)",
+      "WebSearch",
+
       "Bash(git *)",
+      "Bash(gh *)",
       "Bash(docker *)",
+      "Bash(curl *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+
       "Bash(npm *)",
       "Bash(npx *)",
       "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(tsc *)",
+
       "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(py -3 *)",
+      "Bash(pip *)",
+      "Bash(pip3 *)",
+      "Bash(pytest *)",
+
       "Bash(rtk *)",
       "Bash(Get-Item *)",
-      "WebSearch"
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Test-Path *)",
+
+      "mcp__plugin_desktop-commander_desktop-commander__read_file",
+      "mcp__plugin_desktop-commander_desktop-commander__list_directory",
+      "mcp__plugin_desktop-commander_desktop-commander__write_file",
+      "mcp__plugin_desktop-commander_desktop-commander__create_directory",
+      "mcp__plugin_desktop-commander_desktop-commander__start_process"
     ],
     "deny": []
   }

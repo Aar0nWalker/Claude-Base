@@ -146,7 +146,30 @@ Base content on Q2 (mission) and Q3 (off-limits). Keep it short and concrete —
 
 ---
 
-## Step 6 — Confirm and delete
+## Step 6 — Scaffold first skill
+
+Create the first project skill. Slug = Q1 answer lowercased, spaces → hyphens.
+
+Create three items under `.claude/skills/<slug>/`:
+
+**`SKILL.md`:**
+```
+---
+description: Use this skill when working on [Q1] — [one-line summary of Q2 mission]
+---
+
+## Instructions
+
+<!-- TODO: fill as recurring tasks emerge -->
+```
+
+**`tools/`** — empty directory (add scripts here as they appear)
+
+**`examples/`** — empty directory (add few-shot examples here)
+
+---
+
+## Step 7 — Confirm and delete
 
 After writing all files, output a single summary:
 
@@ -160,6 +183,7 @@ After writing all files, output a single summary:
 ✓ .env  (fill other app secrets as needed)
 ✓ deploy.winscp
 ✓ deploy.bat  (fill WinSCP.com path)
+✓ .claude/skills/<slug>/  (первый скилл проекта)
 
 Project: [name]
 ```
