@@ -1,4 +1,29 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PROJECT_PATH_WSL}}/scripts/agent-task-hook.sh Claude",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PROJECT_PATH_WSL}}/scripts/agent-task-hook.sh Claude",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Read(*)",
@@ -27,17 +52,7 @@
       "Bash(pip3 *)",
       "Bash(pytest *)",
 
-      "Bash(rtk *)",
-      "Bash(Get-Item *)",
-      "PowerShell(Get-ChildItem *)",
-      "PowerShell(Get-Content *)",
-      "PowerShell(Test-Path *)",
-
-      "mcp__plugin_desktop-commander_desktop-commander__read_file",
-      "mcp__plugin_desktop-commander_desktop-commander__list_directory",
-      "mcp__plugin_desktop-commander_desktop-commander__write_file",
-      "mcp__plugin_desktop-commander_desktop-commander__create_directory",
-      "mcp__plugin_desktop-commander_desktop-commander__start_process"
+      "Bash(rtk *)"
     ],
     "deny": []
   }

@@ -1,0 +1,69 @@
+# build-provenance doc (references the source project; not part of the template)
+REWRITE-PLAN.md
+
+# backups
+backups/
+
+# deploy artifacts
+deploy.log
+rollback.log
+backend/app/release_info.json
+.release-current
+.release-previous
+.bluegreen-active
+
+# SSH keys — never commit private keys
+ssh/
+*.pem
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+secrets/
+*cookies*.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# node deps + build
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.next/
+*.tsbuildinfo
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# worker-bot RUNTIME (templates under .agents/ are tracked; runtime is not)
+.agents/worker-bot/*.log
+.agents/worker-bot/*.pid
+.agents/worker-bot/*.lock
+.agents/worker-bot/.lock
+.agents/worker-bot/state.json
+.agents/worker-bot/dispatch-*.log
+.agents/worker-bot/*.tmp
+.agents/worker-bot/codex-thread-id
+.agents/worker-bot/screenshots/*
+.agents/worker-bot/agents/*
+# but keep the skeleton dir markers
+!.agents/worker-bot/agents/.gitkeep
+!.agents/worker-bot/screenshots/.gitkeep
+
+# local agent tooling / plugins (user-global, not part of the template)
+.rtk/
+.tools/
+.uv-cache/
+.venv-headroom/
+.headroom/
+
+# frontend test artifacts
+frontend/e2e/test-results/
+frontend/e2e/playwright-report/
+frontend/e2e/screenshots/

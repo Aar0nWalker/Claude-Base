@@ -1,0 +1,4 @@
+# Test-only deps (installed in the image so the build can run the suite).
+pytest==8.4.2
+pytest-asyncio==0.24.0
+aiosqlite>=0.19

@@ -1,54 +1,83 @@
-### Must-Have (Links)
+# Oridium Code Base
 
-**[RTK](https://github.com/rtk-ai/rtk)** — перехватывает терминальные команды и сжимает их прежде, чем они попадут в контекст клода (сейвит токены при вызове команд клодом)
+A batteries-included **SaaS starter template** extracted from a production codebase. Clone it,
+run `follow init.md`, and you start from a working auth + admin skeleton with deploy, parallel-agent
+tooling, and a proxy killswitch already wired — not an empty folder.
 
-**[Caveman](https://github.com/JuliusBrussee/caveman)** — сокращает объём текстовых ответов клода, при этом не теряя технической точности (сейвит токены при общении с клодом)
+It is **generic**: no product domain baked in (no video/AI/marketplace), no billing. Just the
+reusable infrastructure every SaaS re-implements.
 
-**[Andrej Karpathy Skills](https://github.com/forrestchang/andrej-karpathy-skills)** — глобальный `CLAUDE.md`, который улучшает поведение клода при работе с кодом (клод лучше кодит)
+## What's inside
 
-**[WinSCP](https://winscp.net)** — SCP/SFTP-клиент для деплоя файлов на сервер (нужен для `deploy.bat`)
+**Stack** — FastAPI + async SQLAlchemy + Postgres backend · Next.js 16 + React 19 + TS frontend ·
+ARQ + Redis worker · Docker Compose + Nginx + certbot. Frontend → backend via a `/backend/*` proxy.
 
-**[PuTTY](https://www.putty.org)** — SSH-клиент для подключения к серверу (Windows)
+| Area | What you get |
+|------|--------------|
+| **Auth** | Register / login / verify-email / reset-password, JWT (httpOnly cookie), bcrypt, session invalidation. |
+| **Admin** | Users, app settings, editable system-prompts, error log — behind `require_admin` (admin = `ADMIN_EMAIL`). |
+| **Backend infra** | Idempotent startup migrations (no Alembic), S3 + local storage, SMTP email, slowapi rate-limit, ARQ worker skeleton, optional Anthropic text helper. |
+| **Frontend infra** | App shell, dashboard, profile, admin, minimal landing, toast/confirm/auth providers, UI primitives, design-token CSS, single `apiFetch` wrapper. |
+| **Ops** | `install.sh` (one-time server setup: Docker/Nginx/UFW/TLS), `deploy.sh` (rsync + rolling rebuild), `rollback.sh`, `start.sh` (local Docker menu). |
+| **Parallel agents** | `.agents/wip.md` registry + `AGENT_SYNC.md` handoff + Telegram worker-bot for a Claude ↔ Codex shared working tree. |
+| **Proxy killswitch** | Windows + WSL scripts that force all dev traffic through a proxy (Clash) or lose network — plus optional Headroom token-compression proxy. |
+| **Agent config** | `AGENTS.md` / `.claude/CLAUDE.md` (rules, backward-compat, security), permissions, hooks, 7 base engineering skills, `выкати` / `автопилот` commands. |
 
-### Core
+## Quick start
 
-**`CLAUDE.md`** — читается самим клодом при запуске сессии, является системным промтом в рамках этой сессии
+```bash
+# 1. Clone into your new project folder
+git clone https://github.com/Aar0nWalker/Oridium-Code-Base .
 
-**`AGENTS.md`** — читается любыми агентными инструментами (опционален, при работе только с клодом)
-
-**`.claude/`** — настройки разрешений клода (чтобы не подтверждать постоянно его запросы)
-
-**`install.sh`** — первичная установка сервера (Debian/Ubuntu, запускать от root).  
-Устанавливает Docker CE, nginx, ufw. Настраивает файрвол (SSH/80/API/Web), генерирует nginx-конфиг с проксированием `/api/` и `/`, обновляет `.env`. В конце предлагает собрать Docker-образы.
-
-**`start.sh`** — интерактивное меню управления Docker-проектом (Linux/Mac).  
-Пункты: запуск, остановка, перезапуск, пересборка (с тестами), логи по сервисам, полная очистка (контейнеры + тома + образы). Поддерживает флаг `--rebuild` для запуска без меню.
-
-**`start.bat`** — то же самое для Windows.  
-Функционально идентичен `start.sh`, работает через `choice` и `docker compose`.
-
-**`deploy.bat`** — деплой файлов на сервер через WinSCP (Windows).  
-Запускает WinSCP CLI со скриптом `deploy.winscp`, пишет лог в `deploy.log`.
-
-
-### Запуск
-
-Скопировать репо в папку нового проекта:
-
-```
-git clone https://github.com/Aar0nWalker/Claude-Base .
-```
-
-Удалить историю шаблона и начать свой репозиторий (Powershell):
-
-```
-Remove-Item -Recurse -Force .git; git init
-```
-
-Открыть клод и написать:
-
-```
+# 2. Fill in placeholders — open Claude/Codex and run:
 follow init.md
+#    → asks project name / domain / paths, replaces every {{PLACEHOLDER}},
+#      copies .env.example → .env, generates MVP.md, deletes init.md.
+
+# 3a. Local
+cp .env.example .env   # (init.md does this) — set JWT_SECRET, POSTGRES_PASSWORD, ADMIN_PASSWORD
+bash start.sh          # → 1) Запуск
+
+# 3b. Production server (Debian/Ubuntu, as root)
+sudo bash install.sh   # Docker + Nginx + UFW + TLS, then builds images
+# then from your machine:
+./deploy.sh            # rsync + rolling rebuild
 ```
 
-Клод задаст 3 вопроса (название, миссия, ограничения MVP), заполнит все плейсхолдеры во всех файлах, сгенерирует `MVP.md` с планом и фазами реализации и удалит `init.md`.
+The API refuses to boot until `JWT_SECRET` is changed from the default — set it in `.env`.
+
+## Layout
+
+```
+├── AGENTS.md  .claude/CLAUDE.md      # agent rules (shared) + Claude specifics
+├── STACK.md  ARCH.md                 # stack defaults + architecture map
+├── RTK.md  PLUGINS.md                # tooling: RTK, ponytail, caveman, Headroom, uv
+├── init.md                           # one-time placeholder-fill flow (delete after)
+├── .env.example                      # env keys (no secrets) — copy to .env
+├── docker-compose.yml                # web · api · worker-fast · redis · db · worker-bot
+├── install.sh  deploy.sh  rollback.sh  start.sh
+├── backend/   FastAPI app (app/{main,db,models,routers/*,deps,storage,email,worker,ai_text})
+├── frontend/  Next.js app (app/, components/, lib/, styles/)
+├── scripts/   worker-bot + killswitch + headroom
+├── docs/      telegram-worker-bot.md · proxy-killswitch.md
+├── .agents/   wip.md registry + worker-bot/ skeleton
+└── .claude/   settings.json · commands/ · skills/base/
+```
+
+## Concepts worth knowing
+
+- **Migrations** are idempotent and run on every boot (`backend/app/db.py`): `create_all` + a list of
+  `ALTER ... IF NOT EXISTS`. To change the schema, edit `models.py` and append one more idempotent
+  statement. No Alembic.
+- **Parallel agents** share one working tree — before editing, claim a row in `.agents/wip.md`; commit
+  only your own files; deploy is exclusive. Full protocol in [AGENTS.md](AGENTS.md).
+- **Skills** live in `.claude/skills/base/` — load the one relevant to the task (planning, implementation,
+  debugging, security, review, frontend, autopilot).
+- **Killswitch** (optional) forces dev traffic through a proxy so nothing leaks direct — see
+  [scripts/KILLSWITCH.md](scripts/KILLSWITCH.md).
+
+## What this template deliberately omits
+
+Billing, and any product/domain logic — add those as new routers + models + migrations on top of the
+auth/admin base, following the backward-compatibility rules in AGENTS.md. AI is limited to an optional
+Anthropic text helper (`backend/app/ai_text.py`); wire in image/video/other providers per project.
