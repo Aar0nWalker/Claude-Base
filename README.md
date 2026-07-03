@@ -84,12 +84,9 @@ API не поднимется, пока `JWT_SECRET` не изменён с де
 
 | Плагин | Зачем | Ссылка |
 |--------|-------|--------|
-| **RTK** (Rust Token Killer) | Оборачивает shell-команды и возвращает компактный вывод (или пропускает как есть) — большая экономия токенов на билдах/тестах/git. | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk) · локальная обёртка в [RTK.md](RTK.md) |
 | **ponytail** | Режим «ленивого сеньора» — форсит простейшее рабочее решение, борется с оверинжинирингом. | Маркетплейс плагинов Claude Code: `/plugin install ponytail` |
-| **caveman** | Сжимает текстовые ответы Claude без потери технической точности. | [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
-| **karpathy-skills** | Глобальный набор скиллов в `CLAUDE.md`, улучшающий поведение при кодинге. | [github.com/forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) |
-| **Headroom** | MCP/HTTP-прокси со сжатием запросов к модели; умеет гнать трафик агента через твой прокси (Clash). Включай вместе с килсвитчем. | подключение в [PLUGINS.md](PLUGINS.md) и [docs/proxy-killswitch.md](docs/proxy-killswitch.md) |
-| **uv / uvx** | Быстрый Python-раннер — локальный фоллбэк, когда Docker недоступен (напр. `uv run pytest`). | [astral.sh/uv](https://astral.sh/uv) |
+| **Headroom** | MCP/HTTP-прокси со сжатием запросов к модели; умеет гнать трафик агента через твой прокси. Включай вместе с килсвитчем. | подключение в [PLUGINS.md](PLUGINS.md) и [docs/proxy-killswitch.md](docs/proxy-killswitch.md) |
+| **Clash Verge Rev** | Прокси-клиент для килсвитча — весь dev-трафик идёт через него или сеть падает. | [github.com/clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) |
 
 ## Что шаблон намеренно опускает
 
