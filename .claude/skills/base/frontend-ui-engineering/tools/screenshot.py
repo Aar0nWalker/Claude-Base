@@ -1,42 +1,52 @@
-"""Visual QA: log in as admin and screenshot site pages (agent reads the PNGs).
+"""Visual QA: screenshot pages of the running app so the agent can actually look at them.
 
-Usage:
-  python screenshot.py [outdir] [path ...]        # default paths: /admin /dashboard
-  BASE_URL=http://localhost:3000 python screenshot.py out /dashboard
+Reading the markup does not tell you whether the layout is broken. This does.
 
-Creds come from repo .env (ADMIN_EMAIL / ADMIN_PASSWORD) and are never printed.
+  python screenshot.py                              # BASE_URL + PAGES from env
+  python screenshot.py out /dashboard /settings     # outdir + explicit paths
+  BASE_URL=http://localhost:3000 python screenshot.py
+
+Optional login, for pages behind a session — set all three, or none:
+  LOGIN_URL=/login LOGIN_USER=... LOGIN_PASSWORD=...
+  LOGIN_USER_SELECTOR / LOGIN_PASSWORD_SELECTOR / LOGIN_SUBMIT_SELECTOR override the defaults.
+
+Credentials come from the environment and are never printed.
 Requires: pip install playwright && python -m playwright install chromium
 """
 import os
 import sys
 from pathlib import Path
+
 from playwright.sync_api import sync_playwright
 
-REPO = Path(__file__).resolve().parents[5]
-BASE = os.environ.get("BASE_URL", "https://{{DOMAIN}}")
+BASE = os.environ.get("BASE_URL", "http://localhost:3000").rstrip("/")
 OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
-PAGES = sys.argv[2:] or ["/admin", "/dashboard"]
+PAGES = sys.argv[2:] or [p for p in os.environ.get("PAGES", "/").split(",") if p]
 
-env = {}
-for line in (REPO / ".env").read_text(encoding="utf-8").splitlines():
-    if "=" in line and not line.strip().startswith("#"):
-        k, v = line.split("=", 1)
-        env[k.strip()] = v.strip()
-email, password = env.get("ADMIN_EMAIL"), env.get("ADMIN_PASSWORD")
-assert email and password, "no ADMIN_EMAIL/ADMIN_PASSWORD in .env"
+LOGIN_URL = os.environ.get("LOGIN_URL")
+LOGIN_USER = os.environ.get("LOGIN_USER")
+LOGIN_PASSWORD = os.environ.get("LOGIN_PASSWORD")
+SEL_USER = os.environ.get("LOGIN_USER_SELECTOR", 'input[type="email"]')
+SEL_PASSWORD = os.environ.get("LOGIN_PASSWORD_SELECTOR", 'input[type="password"]')
+SEL_SUBMIT = os.environ.get("LOGIN_SUBMIT_SELECTOR", 'button[type="submit"]')
 
 OUT.mkdir(parents=True, exist_ok=True)
+
 with sync_playwright() as p:
-    b = p.chromium.launch()
-    page = b.new_page(viewport={"width": 1440, "height": 900})
-    page.goto(f"{BASE}/login", wait_until="networkidle", timeout=60000)
-    page.fill('input[type="email"]', email)
-    page.fill('input[type="password"]', password)
-    page.click('button[type="submit"]')
-    page.wait_for_url(lambda u: "/login" not in u, timeout=30000)
+    browser = p.chromium.launch()
+    page = browser.new_page(viewport={"width": 1440, "height": 900})
+
+    if LOGIN_URL and LOGIN_USER and LOGIN_PASSWORD:
+        page.goto(f"{BASE}{LOGIN_URL}", wait_until="networkidle", timeout=60000)
+        page.fill(SEL_USER, LOGIN_USER)
+        page.fill(SEL_PASSWORD, LOGIN_PASSWORD)
+        page.click(SEL_SUBMIT)
+        page.wait_for_load_state("networkidle")
+
     for path in PAGES:
         page.goto(f"{BASE}{path}", wait_until="networkidle", timeout=60000)
-        name = path.strip("/").replace("/", "_") or "home"
-        page.screenshot(path=str(OUT / f"shot_{name}.png"))
-        print(f"{path} -> {page.url} -> shot_{name}.png")
-    b.close()
+        name = (path.strip("/").replace("/", "_") or "index") + ".png"
+        page.screenshot(path=str(OUT / name), full_page=True)
+        print(f"{path} -> {page.url} -> {name}")
+
+    browser.close()

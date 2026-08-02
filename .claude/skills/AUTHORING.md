@@ -14,8 +14,11 @@ A skill has 3 layers, not one prompt:
 | Instructions | How to execute | `SKILL.md` body |
 | Tools | Scripts, templates, configs | `tools/` |
 
-- Empty `tools/` = unfinished skill. Repeatable logic → code in `tools/`, not AI recomputation
-  every session.
+- **Repeatable logic → code in `tools/`**, not AI recomputation every session. If the skill would
+  make you rederive the same thing each time — a search, a tally, a checklist, a report — that is
+  a script, and a skill missing it is unfinished.
+- A skill that is pure judgement (how to review, how to plan) legitimately has no `tools/`. Don't
+  manufacture a script to satisfy the shape.
 - Compositional, not monolithic: 3–5 focused skills, each doing one thing; Claude orchestrates them.
 - A skill that cannot learn goes stale. If it holds project knowledge, give it a place to record
   new lessons (see `base/debugging-and-error-recovery/tools/bug_ledger.py` and `base/learned-rules/`).

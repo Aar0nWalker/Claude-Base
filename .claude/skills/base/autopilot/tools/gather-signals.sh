@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Autopilot signal gathering: surface concrete improvement candidates from the code.
-# Read-only. Prints grouped TODO/FIXME/HACK/ponytail markers so the autopilot loop
-# can pick real work when the backlog runs dry. Prod/analytics signals are pulled
-# separately by the loop (redis job errors, admin funnel) — kept out of here to stay
-# offline-safe and fast.
+# Read-only, offline, fast. Prints TODO/FIXME/HACK markers so the autopilot loop can pick real
+# work when the backlog runs dry. Production signals (error logs, analytics) are pulled by the
+# loop itself — they outrank anything here.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
 cd "$ROOT"
@@ -11,22 +10,20 @@ cd "$ROOT"
 echo "# Candidates from the code ($(date -u +%Y-%m-%dT%H:%MZ))"
 echo
 
-emit() {
-  local label="$1" pattern="$2"
-  local hits
-  hits="$(grep -rInE "$pattern" \
-    --include='*.ts' --include='*.tsx' --include='*.py' \
-    --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=e2e \
-    --exclude-dir=.git --exclude-dir=__pycache__ \
-    frontend backend scripts 2>/dev/null || true)"
-  [ -z "$hits" ] && return 0
-  echo "## $label"
-  # file:line: trimmed message
+# Stack-agnostic on purpose: scan tracked files, so vendor directories and build output are
+# excluded by .gitignore rather than by a hardcoded list that goes stale on the next project.
+hits="$(git ls-files -z 2>/dev/null \
+  | xargs -0 grep -InE 'TODO|FIXME|HACK|XXX' 2>/dev/null \
+  | grep -vE '(^|/)(CHANGELOG|README)\.md:' || true)"
+
+if [[ -z "$hits" ]]; then
+  echo "no TODO/FIXME/HACK markers found"
+else
+  echo "## TODO / FIXME / HACK / XXX"
   echo "$hits" | sed -E 's/^([^:]+:[0-9]+):[[:space:]]*/\1  /' | head -40
-  echo
-}
+fi
 
-# ponytail: excluded — those are deliberate, documented simplifications, not tasks.
-emit "TODO / FIXME / HACK / XXX" 'TODO|FIXME|HACK|XXX'
-
-echo "# Next: cross-check against production reliability (redis job errors) and the admin funnel — they outrank TODOs."
+echo
+# `ponytail:` markers are deliberate, documented simplifications — a debt ledger, not a task list.
+echo "# Deliberate shortcuts (ponytail:) are NOT tasks — revisit only when the ceiling they name is hit."
+echo "# Next: production reliability and user-facing friction outrank every TODO above."

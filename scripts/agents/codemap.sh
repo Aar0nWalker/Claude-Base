@@ -2,8 +2,8 @@
 # codemap — symbol map of a monster file: symbol → line number.
 # Jump straight to the function with Read offset/limit instead of reading the whole file.
 #
-# Usage: bash scripts/agents/codemap.sh backend/app/worker.py
-#        bash scripts/agents/codemap.sh 'frontend/app/(app)/dashboard/page.tsx'
+# Usage: bash scripts/agents/codemap.sh path/to/big_module.py
+#        bash scripts/agents/codemap.sh 'path/to/(group)/page.tsx'
 set -euo pipefail
 f="${1:?usage: codemap.sh <file>}"
 [ -f "$f" ] || { echo "no file: $f" >&2; exit 1; }

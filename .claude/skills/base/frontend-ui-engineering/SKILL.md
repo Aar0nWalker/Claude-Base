@@ -1,26 +1,31 @@
 ---
 name: frontend-ui-engineering
-description: Use for {{PROJECT_NAME}} frontend, landing, app shell, admin UI, responsive layout, copy, visual QA, and screenshots. This project skill has priority over generic frontend guidance.
+description: Use for {{PROJECT_NAME}} user interface work — layout, states, copy, visual QA, screenshots. Only relevant if the project has a user interface.
 ---
 
-# Frontend UI Engineering
+# UI Engineering
 
-This project skill is the first frontend reference for {{PROJECT_NAME}} UI work.
+Skip this skill if the project has no user interface.
 
-Rules:
+## Rules
 
-- match existing UI patterns before inventing new ones (`components/ui/*`, `app/globals.css` design tokens);
-- keep copy simple for non-technical users;
-- do not mention features, tiers, or payments the product doesn't currently support;
-- avoid marketing fluff in operational (app) screens;
-- keep controls predictable: tabs for modes, toggles for binary choices, inputs/sliders for numbers;
-- use compact layouts for app screens and richer visuals only on the landing page;
-- check mobile and desktop for overlap, overflow, and alignment.
+- Match the patterns already in the project before inventing new ones: find the existing component
+  primitives and design tokens and reuse them. A second styling approach is a permanent tax.
+- **Cover every state, not just the happy one:** loading, empty, error, and "far more data than the
+  designer imagined". Missing states are the most common UI bug and they never appear in a demo.
+- Any modal or overlay stays closable — ✕, backdrop click and Esc — no matter what is loading
+  behind it. A user trapped in a dialog will reload the page and lose their work.
+- Keep copy plain and aimed at someone who does not know how the system works inside. Never
+  mention features, tiers or payments the product does not actually support yet.
+- Keep controls predictable: tabs for modes, toggles for binary choices, inputs for numbers.
+- Don't resize or restyle things nobody asked about.
+- Check both a narrow and a wide screen for overlap, overflow and alignment.
+- State that must survive a multi-step flow (wizard, onboarding) lives in one place — not
+  re-derived at each step, where the steps inevitably disagree.
 
-Conventions:
+## Verifying
 
-- `providers.tsx` composes toast + confirm + auth context — reuse it, don't add ad-hoc providers;
-- admin-only or experimental features stay gated behind the admin check until enabled for everyone;
-- any state that must persist across a multi-step flow (wizard, onboarding) should live in one place, not be re-derived per step.
-
-When visual correctness matters, use screenshots before finalizing: `tools/screenshot.py`.
+Reading the code does not tell you what the screen looks like. When visual correctness matters,
+take a screenshot before declaring it done: `tools/screenshot.py` (configure the URLs and, if the
+page needs a session, the login details via env). For flows rather than single screens, write a
+browser test instead — see the `frontend-e2e` skill.
