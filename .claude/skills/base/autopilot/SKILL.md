@@ -14,11 +14,11 @@ if everything is green.** Enforced by the guardrails below.
 
 ## One cycle
 
-0. **Keepalive.** `bash scripts/keepalive.sh` — bring up anything that fell over (bot
-   container, dispatcher), check network. If the network is down, end the cycle without
+0. **Keepalive.** `bash modules/bot/scripts/keepalive.sh` (only if the bot module is installed) —
+   restart the bot loop if it died, check network. If the network is down, end the cycle without
    doing work — the next tick resumes on its own. Nothing is lost: the backlog and git are
    persistent.
-1. **Explicit tasks first.** `./scripts/worker-bot.sh queue` (if the Telegram worker-bot is
+1. **Explicit tasks first.** `./modules/bot/scripts/worker-bot.sh queue` (if the Telegram worker-bot is
    set up). Open tasks exist → do them, autopilot yields. Only pull from the backlog when
    the queue is empty.
 2. **Pick work.** Top unclaimed item in `.agents/autopilot/backlog.md` ("Ready" section). If
@@ -29,24 +29,23 @@ if everything is green.** Enforced by the guardrails below.
    an active row from another agent, pick a different item.
 4. **Small slice.** Plan first if it touches more than 1 file or more than 30 lines; edit in
    the style of the surrounding code; no speculative abstractions. One item per cycle.
-5. **Verify.** TS → `cd frontend && npx tsc --noEmit`. Python → `python -m py_compile` +
-   pytest (through Docker `api`, local `uv` as fallback). Never spend money on paid
-   neural-net/AI APIs during checks (project rule).
+5. **Verify.** Narrow check for the changed zone: `bash scripts/ci/check.sh <zone>`.
+   Never spend money on paid AI APIs during checks (project rule).
 6. **Deploy if green.** Only if checks pass AND the tree is clean of foreign changes:
    - Check `.agents/wip.md` for another agent's active row and `git status` for foreign
-     uncommitted changes in backend/frontend. **Foreign WIP present → do NOT deploy**
-     (`deploy.sh` rsyncs the working copy and would ship the other agent's unfinished work):
-     commit your own slice with explicit paths, note "deploy deferred — foreign WIP", move on.
-   - Clean → `bash deploy.sh` (its own test/health gate). Green → `git add <your paths>`
-     (never `-A`), `git commit`, `git push`. Verify HTTP 200 on `/health` and check
-     `api`/`worker-fast`/`web` logs.
-   - Any red gate (tsc/pytest/deploy/health) → revert the slice (`git restore` /
-     `git checkout --`), log the reason under "Done", skip the deploy. `rollback.sh` is
-     available if a bad build already reached the server.
+     uncommitted changes. **Foreign WIP present → do NOT release** (a deploy that ships the
+     working copy would carry the other agent's unfinished work): commit your own slice with
+     explicit paths, note "release deferred — foreign WIP", move on.
+   - Clean → release per `docs/deploy-contract.md` (it runs the full gate itself and refuses a
+     dirty tree). Green → `git add <your paths>` (never `-A`), `git commit`, `git push`, then
+     check health from outside and read the logs of what restarted.
+   - Any red gate (gate/deploy/health) → revert the slice (`git restore` /
+     `git checkout --`), log the reason under "Done", skip the release. If a bad build already
+     reached the server, use the project's rollback path (`docs/deploy-contract.md` §6).
 7. **Sensitive zones — review only.** Auth, admin access, DB schema/migrations, security —
    **do not self-deploy** these. Found an improvement there → file it under "Needs review"
    in the backlog and continue with something safe.
-8. **Report.** `./scripts/worker-bot.sh status <agent> "cycle N: <what was done>,
+8. **Report.** `./modules/bot/scripts/worker-bot.sh status <agent> "cycle N: <what was done>,
    <deployed/deferred>, next: <next item>"` if the worker-bot is wired up. Mark the item
    `[x]` in the backlog (move to "Done" with the date). Remove your row from `.agents/wip.md`.
 9. **Continue.** If not stopped, make sure a recurring schedule exists for the next cycle
@@ -59,8 +58,7 @@ if everything is green.** Enforced by the guardrails below.
 - **Money.** Zero spend on paid neural-net/AI APIs without explicit permission. Tests only
   use free paths.
 - **Production.** Ship only fully green changes, only with a tree clean of foreign work. A
-  failed health check must not flip traffic — `rollback.sh` exists for that. Red gate = revert
-  the slice.
+  failed health check must not be left live — roll back instead. Red gate = revert the slice.
 - **Scope.** One small slice per cycle. No unrelated refactors. Sensitive zones go to review.
 - **Git.** Only your own files, explicit paths. `git status` before every commit — never touch
   foreign changes.
@@ -80,7 +78,7 @@ The skill is instructions; it does not run itself. The engine is **self-scheduli
   running unattended. A network drop breaks one tick; the next one resumes. The schedule is
   session-scoped — closing the session stops the engine.
 - **Level 2 — fully unattended (survives closing/reboot):** an OS-level scheduler
-  (cron / Task Scheduler) runs `scripts/keepalive.sh` every ~15 min (brings services back up
+  (cron / Task Scheduler) runs `modules/bot/scripts/keepalive.sh` every ~15 min (brings services back up
   after reboot/sleep) and triggers an autopilot cycle via a headless CLI run or by re-queuing
   a task to the bot. Needs one-time scheduler setup and explicit user consent (autostart +
   unmonitored token spend). Set this up only on direct request.

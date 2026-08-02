@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# EXAMPLE full gate zone — copy to `full.sh` and replace the commands with your stack's.
+# Read scripts/ci/zones/README.md first: exit non-zero on failure, stay hermetic, clean up.
+#
+# The shape below is what a containerised project looks like. For a project with no services
+# (a CLI, a library, a game), `full.sh` can be three lines — that is fine and still a real gate:
+#
+#   set -euo pipefail
+#   cargo clippy -- -D warnings
+#   cargo test --all
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+cd "$ROOT"
+
+# Namespace everything global so parallel worktrees don't kill each other's containers.
+PROJECT_NAME="${TEST_GATE_PROJECT_NAME:-app-test-gate}"
+compose=(docker compose --project-name "$PROJECT_NAME" --file docker-compose.test.yml)
+
+cleanup() { "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1 || true; }
+trap cleanup EXIT INT TERM
+cleanup
+
+# Static check first: it costs seconds and catches things tests never reach (an undefined name
+# in a branch no test exercises is a production crash).
+"${compose[@]}" run --rm --no-deps lint
+
+# Then the suites. `run --rm` propagates the container's exit code — that is the verdict.
+"${compose[@]}" run --rm unit
+"${compose[@]}" run --rm integration
+"${compose[@]}" run --rm e2e
+
+echo "[zone] full: all suites passed"

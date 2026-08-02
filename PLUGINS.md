@@ -1,39 +1,31 @@
-# Plugins & Tooling
+# Plugins & tooling
 
-Recommended Claude Code / agent tooling for working in this repo. **Claude plugins live in
-`~/.claude/` (user-global) — they are installed once per machine and are NOT committed here.**
-This file lists what to install and what is repo-local.
+Optional tooling that speeds up agent work in this repo. **Claude plugins live in `~/.claude/`
+(user-global): installed once per machine, never committed here.** Everything below is a
+convenience — the project works without any of it.
 
 ## Global (install once per machine)
 
-| Tool | What it does | Install / enable |
-|------|--------------|------------------|
-| **RTK** (Rust Token Killer) | Wraps shell commands and returns a compact form (or passes through) — big token savings on builds/tests/git. | See [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk); or use the repo-local wrapper `.tools/bin/rtk` (see [RTK.md](RTK.md)). |
-| **ponytail** | "Lazy senior dev" mode — forces the simplest solution that works, anti-over-engineering. | Claude Code plugin marketplace: `/plugin install ponytail`. |
-| **caveman** | Compresses Claude's textual replies without losing technical precision. | [github.com/JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman). |
-| **karpathy-skills** | Global `CLAUDE.md` skill set that improves coding behavior. | [github.com/forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills). |
-| **uv / uvx** | Fast Python runner — local fallback when Docker isn't available (e.g. `uv run pytest`). | [astral.sh/uv](https://astral.sh/uv). Repo-local copies may live in `.tools/bin/`. |
-
-These are developer conveniences — the project builds and runs without any of them.
+| Tool | What it does | Install |
+|---|---|---|
+| **ponytail** | "Lazy senior dev" mode — forces the simplest solution that actually works, pushes back on over-engineering and speculative abstractions. | Claude Code plugin marketplace: `/plugin install ponytail` |
+| **RTK** (Rust Token Killer) | Wraps shell commands and returns a compact form (or passes through untouched) — large token savings on builds, tests and git. | [github.com/rtk-ai/rtk](https://github.com/rtk-ai/rtk); usage in [RTK.md](RTK.md) |
+| **Headroom** | Local proxy that compresses requests to the model API, and can route agent traffic through your own proxy. | Point `ANTHROPIC_BASE_URL` at it; see [modules/killswitch](modules/killswitch/README.md) |
+| **Clash Verge Rev** | Proxy client used by the killswitch — all dev traffic goes through it or the network drops. | [github.com/clash-verge-rev/clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) |
 
 ## Repo-local (committed here)
 
-- **`RTK.md`** — how RTK is used in this repo.
-- **`.claude/`** — permissions, hooks, and the base skills under `.claude/skills/base/`.
-- **Headroom killswitch wiring** — `scripts/start-headroom.sh`, `scripts/killswitch-*.ps1`,
-  `scripts/wsl-killswitch.sh`, [scripts/KILLSWITCH.md](scripts/KILLSWITCH.md). Optional; enable only if
-  you want all dev traffic forced through a proxy (see [docs/proxy-killswitch.md](docs/proxy-killswitch.md)).
+- **[RTK.md](RTK.md)** — how RTK is used in this repo.
+- **`.claude/`** — rules, commands, skills. The reason this template exists.
+- **[modules/killswitch](modules/killswitch/README.md)** — optional: all dev traffic through your
+  proxy, or no network at all. Includes the Headroom setup.
+- **[modules/bot](modules/bot/README.md)** — optional: a Telegram task queue for agents.
 
-## Headroom (optional token-compression proxy)
+Not committed, ever: `~/.claude/plugins/*`, `.venv-headroom/`, `.rtk/`, `.tools/` — all
+user-global or machine-local.
 
-Headroom is an MCP/HTTP proxy that compresses model requests and can route agent traffic through your
-proxy (Clash). Enable it if you run the killswitch:
+## Removing what you don't use
 
-- Point Claude/Codex at it via `ANTHROPIC_BASE_URL=http://127.0.0.1:8788` (leave empty for direct API).
-- Start it with `scripts/start-headroom.sh`.
-- It is user-local infra — `.headroom/`, `.tools/`, `.venv-headroom/` are gitignored.
-
-## Not committed (gitignored)
-
-`~/.claude/plugins/*`, `.headroom/`, `.tools/`, `.venv-headroom/`, `.rtk/` — all user-global or
-machine-local; never pushed with the template.
+If a project will never use the killswitch or the Telegram worker-bot, delete those scripts and
+docs during bootstrap rather than leaving them lying around. Dead tooling reads as live tooling
+and costs the next session time — the same reason stale rules are worse than missing ones.

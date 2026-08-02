@@ -1,45 +1,26 @@
-# build-provenance doc (references the source project; not part of the template)
+# ── template's own build docs (not your project's) ───────────────────────────
 REWRITE-PLAN.md
 
-# backups
-backups/
-
-# deploy artifacts
+# ── gate & release artifacts ─────────────────────────────────────────────────
+.gate-logs/
 deploy.log
+deploy.run.log
 rollback.log
-backend/app/release_info.json
-.release-current
-.release-previous
-.bluegreen-active
 
-# SSH keys — never commit private keys
-ssh/
-*.pem
-
-# env / secrets
+# ── secrets ──────────────────────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
 secrets/
+ssh/
+*.pem
 *cookies*.txt
 
-# OS
-.DS_Store
-Thumbs.db
-
-# node deps + build
-node_modules/
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
-.next/
-*.tsbuildinfo
-
-# python
-__pycache__/
-*.pyc
-.pytest_cache/
-.venv/
+# ── agent state: session mirrors + archived chats (local context, never shipped)
+.agents/sessions/*
+!.agents/sessions/.gitkeep
+chat-archive/*
+!chat-archive/README.md
 
 # worker-bot RUNTIME (templates under .agents/ are tracked; runtime is not)
 .agents/worker-bot/*.log
@@ -49,21 +30,43 @@ __pycache__/
 .agents/worker-bot/state.json
 .agents/worker-bot/dispatch-*.log
 .agents/worker-bot/*.tmp
-.agents/worker-bot/codex-thread-id
 .agents/worker-bot/screenshots/*
 .agents/worker-bot/agents/*
-# but keep the skeleton dir markers
 !.agents/worker-bot/agents/.gitkeep
 !.agents/worker-bot/screenshots/.gitkeep
 
-# local agent tooling / plugins (user-global, not part of the template)
+# ── machine-local agent tooling / plugins (user-global, not part of the template)
 .rtk/
 .tools/
 .uv-cache/
 .venv-headroom/
 .headroom/
+.claude/settings.local.json
 
-# frontend test artifacts
-frontend/e2e/test-results/
-frontend/e2e/playwright-report/
-frontend/e2e/screenshots/
+# ── dependency & build output ────────────────────────────────────────────────
+# Junk in every ecosystem. Kept generic on purpose: the stack is not decided yet,
+# and an agent committing a dependency tree is a mess nobody enjoys unpicking.
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+target/
+out/
+*.egg-info/
+.next/
+*.tsbuildinfo
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── your project's own ignores go below ──────────────────────────────────────
+# One warning learned the hard way: if your build uses a lockfile (npm ci,
+# poetry.lock, Cargo.lock, go.sum), that lockfile MUST be committed. Ignoring it
+# means the build works for you and breaks on every fresh clone.

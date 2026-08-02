@@ -1,54 +1,84 @@
-# Project Init
+# Bootstrap — turning this template into your project
 
-You are initializing a new project from this base template. Do the following, then delete this file.
+You are starting a new project from this template. It carries **rules, workflow and agent
+tooling** — no application code and no stack. Your job in this file: interview the user, fix the
+stack, **stand up the verification loop**, and only then write the first feature.
 
-## 1. Ask the user (one short round)
+Work through the steps in order. Step 4 is not optional and does not come later.
 
-Collect these values. Offer sensible defaults; only `PROJECT_NAME` is truly required.
+## 1. Interview (one short round)
 
-| Placeholder | Meaning | Default |
-|-------------|---------|---------|
-| `{{PROJECT_NAME}}` | Human name, e.g. "Acme" | — (ask) |
-| `{{PROJECT_SLUG}}` | lowercase slug (image tags, db, cookies), e.g. "acme" | slugify(PROJECT_NAME) |
-| `{{PROJECT_TAGLINE}}` | one-line landing tagline | ask or leave generic |
-| `{{DOMAIN}}` | production domain, e.g. "acme.com" | `PROJECT_SLUG.com` |
-| `{{PROD_IP}}` | production server IP (deploy target) | ask or `CHANGE_ME` |
-| `{{PROJECT_PATH_WIN}}` | Windows repo path (killswitch/bot) | current dir, Windows form |
-| `{{PROJECT_PATH_WSL}}` | WSL repo path (`/mnt/...`) | current dir, WSL form |
-| `{{CLASH_PORT}}` | local proxy port (killswitch) | `7897` |
-| `{{WSL_DISTRO}}` | WSL distro name | `Ubuntu` |
-| `{{WSL_USER}}` | WSL username | ask |
+Ask only what you cannot infer. Offer defaults, keep it to a handful of questions:
 
-Also ask the mission / MVP scope in 1-2 sentences (for `MVP.md`).
+| Question | Why it matters |
+|---|---|
+| What are we building, in 1–2 sentences? | goes into `PROJECT.md`; every later decision refers back to it |
+| Who uses it, and how do they reach it? | web / CLI / bot / desktop / library — decides the whole shape |
+| Language and runtime? | if the user has no preference, recommend one and say why in a sentence |
+| Does it store data? What kind? | picks the database, or rules one out |
+| Where does it run when it's done? | their machine / a VPS / a cloud runtime / published as a package |
+| Anything that must NOT change? | existing accounts, a chosen host, a required library |
 
-The parallel-work, Telegram-bot, and killswitch placeholders (`PROD_IP`, `PROJECT_PATH_*`,
-`CLASH_PORT`, `WSL_*`) only matter if the user will use those features. If not, tell them they can
-leave the defaults and fill them later.
+Then ask for the MVP in one list: the smallest thing that is genuinely useful.
 
-## 2. Replace placeholders everywhere
+Do not offer an architecture menu. Pick the boring, well-supported option for their answers,
+state the choice in one line with its trade-off, and move on.
 
-Replace every `{{...}}` occurrence across ALL files (root, `backend/`, `frontend/`, `scripts/`,
-`docs/`, `.claude/`, `.env.example`, `docker-compose.yml`). Verify none remain:
+## 2. Fill in the project's own context files
 
-```bash
-grep -rl "{{" . --exclude-dir=.git
-```
+- **`PROJECT.md`** — what we are building, for whom, MVP scope, explicit non-goals.
+- **`STACK.md`** — the chosen technologies, one row each, with versions. This is the file that
+  answers "what do we use for X" for every later session.
+- **`ARCH.md`** — the map: components, how a request/command flows end to end, where each kind of
+  code lives. It starts small; it must never go stale.
+- **`SESSION_HANDOFF.md`** — reset "Current state" to "fresh project, nothing shipped".
 
-## 3. Set up env
+Keep `AGENTS.md`, `.claude/`, `.agents/`, `scripts/` as they are — those are the rules and the
+tooling, and they are the reason this template exists.
 
-Copy `.env.example` → `.env`, generate a strong `JWT_SECRET`, set `POSTGRES_PASSWORD` and
-`ADMIN_PASSWORD`. Remind the user `.env` is gitignored and must never be committed.
+## 3. Scaffold the smallest runnable skeleton
 
-## 4. Generate `MVP.md`
+Not a feature — just enough that something runs and can be tested: entry point, dependency
+manifest, one health/smoke path. No speculative structure, no folders "for later".
 
-Write `MVP.md`: the mission, the MVP feature list, and a short phased implementation plan (what to
-build on top of the auth/admin base first). Keep it concrete and small.
+## 4. Stand up the gate — BEFORE the first feature
 
-## 5. Clean up
+The rules in `AGENTS.md` say the gate is the only verdict before a release. Right now this
+project has no gate, and `scripts/ci/test-gate.sh` refuses to run — deliberately.
 
-- Delete this `init.md`.
-- Delete `REWRITE-PLAN.md` if present (it documents how this template was built, not your project).
-- Optionally reset git history for a fresh start: `Remove-Item -Recurse -Force .git; git init` (PowerShell)
-  or `rm -rf .git && git init`.
+1. Write `scripts/ci/zones/full.sh` for this stack (read `scripts/ci/zones/README.md`, copy
+   `full.sh.example`). Add `backend.sh` / `frontend.sh` fast lanes only if the project is big
+   enough to need them.
+2. Write **one real test** — the smoke path from step 3. Not a placeholder that asserts `True`.
+3. Run it:
+   ```bash
+   bash scripts/ci/test-gate.sh
+   ```
+   It must end with `gate green`.
+4. Prove the gate can fail: break the code the test covers, rerun, confirm it goes red, restore.
+   A gate nobody has seen fail is not known to work. If your tests run from a built image, the
+   rebuild flag matters — otherwise you are testing the old code and reading it as "the test is
+   empty".
 
-Then tell the user the next step: `sudo bash install.sh` on the server, or `bash start.sh` locally.
+Only when the gate is green AND has been seen red do you continue.
+
+## 5. Deploy path (only if it ships somewhere)
+
+If the project runs anywhere but the user's machine, create `scripts/ops/deploy.sh` following
+`docs/deploy-contract.md`. If it does not deploy — a library, a CLI, a local tool — say so and
+skip; the `выкати` command then means "publish/release" per that contract, or nothing at all.
+
+## 6. First slice
+
+Take the smallest useful item from the MVP list and ship it end to end under the normal rules:
+plan first if it touches more than one file or 30 lines, test in the same change, narrow check,
+then the full gate.
+
+## 7. Clean up
+
+- Delete this `init.md` and `UNIVERSAL-TEMPLATE-PLAN.md`.
+- Remove `scripts/ci/zones/full.sh.example` once your real zones exist.
+- Drop template parts the project will never use (Telegram worker-bot, proxy killswitch) rather
+  than leaving dead scripts and docs lying around — dead tooling gets read as live and wastes
+  the next session's time.
+- Tell the user what was set up, what the gate covers, and what the first slice will be.

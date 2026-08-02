@@ -1,3 +1,5 @@
 * text=auto
 *.sh text eol=lf
 *.py text eol=lf
+# Zone examples get copied into *.sh — CRLF here would trip the gate's own line-ending guard.
+*.example text eol=lf

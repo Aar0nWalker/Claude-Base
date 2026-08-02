@@ -1,31 +1,26 @@
-# Stack Defaults
+# Stack
 
-Default technologies for {{PROJECT_NAME}}. Use these when adding a module unless a task says otherwise.
+<!-- Filled during bootstrap (init.md), then kept current. This file answers "what do we use
+     for X" so no session has to re-derive it or guess. One row per choice, with a version. -->
 
-| Module / service | Technology |
-|-----------------|------------|
-| Backend | Python 3.12 + FastAPI + async SQLAlchemy 2.0 + asyncpg |
-| Database | PostgreSQL 16 |
-| Frontend | Node 20 + Next.js 16 (App Router, standalone, Turbopack) + React 19 + TypeScript |
-| Styles | CSS variables (no Tailwind); icons via `lucide-react` |
-| Background worker | ARQ + Redis (`worker-fast`, queue `arq:queue`) |
-| Cache / queue | Redis 7 |
-| Auth | JWT single access token (`get_current_user`), bcrypt password hashing |
-| Email | SMTP via `aiosmtplib` (verification / password reset) |
-| File storage | S3-compatible via `aioboto3`; fallback — local FS `/storage` (Docker volume) |
-| Rate limiting | slowapi |
-| AI text (optional) | Anthropic Claude via `app/ai_text.py` (only if `ANTHROPIC_API_KEY` set) — default model `claude-opus-4-8` |
-| Infra | Docker Compose + Nginx + certbot (TLS) |
-| API port | 8000 (container, localhost-bound) |
-| Web port | 3000 (container) / 3001 (host) |
-| Nginx routing | `/` → Web:3001; Next proxies `/backend/*` → api:8000 |
-| Migrations | idempotent startup migrations in `db.py` (`create_all` + `ALTER ... IF NOT EXISTS`), no Alembic |
-| Test runner | pytest + pytest-asyncio (backend) |
+Chosen technologies for {{PROJECT_NAME}}. Use these when adding a module unless a task says
+otherwise. Adding a NEW dependency is a decision — record it here in the same change.
+
+| Module / concern | Technology | Version |
+|---|---|---|
+| Language / runtime | _(…)_ | _(…)_ |
+| Package manager | _(…)_ | _(…)_ |
+| Storage / database | _(or "none")_ | _(…)_ |
+| Test runner | _(…)_ | _(…)_ |
+| Static check / linter | _(…)_ | _(…)_ |
+| Build / packaging | _(…)_ | _(…)_ |
+| Runtime target | _(where it runs in production)_ | _(…)_ |
 
 ## Rules
 
-- Don't hardcode technology/model names — read from env / constants.
-- No sync DB sessions in async context.
-- Secrets only from env vars, never in code or logs.
-- Never expose PII (phones, emails, tokens) in API responses or logs.
-- Raw user input only through the ORM / parameterized statements.
+- Don't hardcode technology or model names — read them from env / constants.
+- Secrets only from environment or secret storage, never in code or logs.
+- Never expose PII (phones, emails, tokens) in responses or logs.
+- Raw user input only through parameterized queries / escaped commands.
+- Prefer the boring, well-supported option. A dependency is a permanent liability: before adding
+  one, check whether the standard library or something already installed covers it.

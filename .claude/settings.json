@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{PROJECT_PATH_WSL}}/scripts/agent-task-hook.sh Claude",
+            "command": "{{PROJECT_PATH_WSL}}/modules/bot/scripts/agent-task-hook.sh Claude",
             "timeout": 20
           }
         ]
@@ -17,8 +17,29 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{PROJECT_PATH_WSL}}/scripts/agent-task-hook.sh Claude",
+            "command": "{{PROJECT_PATH_WSL}}/modules/bot/scripts/agent-task-hook.sh Claude",
             "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{PROJECT_PATH_WSL}}/modules/bot/scripts/agent-task-hook.sh Claude stop",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.transcript_path // empty' | tr -d '\\r' | { read -r p; d=\"{{PROJECT_PATH_WSL}}/.agents/sessions\"; [ -f \"$p\" ] && mkdir -p \"$d\" && cp -f \"$p\" \"$d/claude-$(basename \"$p\")\"; bash {{PROJECT_PATH_WSL}}/scripts/agents/prune-sessions.sh; } 2>/dev/null || true",
+            "timeout": 15,
+            "async": true
           }
         ]
       }
@@ -51,6 +72,14 @@
       "Bash(pip *)",
       "Bash(pip3 *)",
       "Bash(pytest *)",
+      "Bash(uv *)",
+
+      "Bash(cargo *)",
+      "Bash(go *)",
+      "Bash(make *)",
+
+      "Bash(bash scripts/ci/*)",
+      "Bash(bash scripts/agents/*)",
 
       "Bash(rtk *)"
     ],
