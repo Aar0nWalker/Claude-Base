@@ -39,8 +39,6 @@ chat-archive/*
 .rtk/
 .tools/
 .uv-cache/
-.venv-headroom/
-.headroom/
 .claude/settings.local.json
 
 # ── dependency & build output ────────────────────────────────────────────────

@@ -32,9 +32,9 @@ $AppPaths = @(
 )
 
 # ssh.exe intentionally absent: prod deploy (rsync/ssh) must keep working.
-# claude.exe IS blocked: Claude Code is routed via ANTHROPIC_BASE_URL=127.0.0.1:8788
-# (Headroom) + HTTPS_PROXY=127.0.0.1:{{CLASH_PORT}} (Clash) in ~/.claude/settings.json, so it
-# only needs loopback. Blocking direct closes the fallback hole.
+# claude.exe IS blocked: Claude Code is routed via HTTPS_PROXY=127.0.0.1:{{CLASH_PORT}} (Clash)
+# in ~/.claude/settings.json, so it only needs loopback. Blocking direct closes the
+# fallback hole.
 $Commands = @(
   "node.exe", "git.exe", "python.exe", "python3.exe", "curl.exe",
   "npm.cmd", "npx.cmd", "pnpm.cmd", "yarn.cmd", "bun.exe", "deno.exe",
@@ -159,9 +159,9 @@ if ([string]::IsNullOrWhiteSpace($wslLeak)) { Write-Host "PASS WSL direct intern
 $wslViaClash = wsl -d {{WSL_DISTRO}} -u {{WSL_USER}} -- bash -lc 'curl -s -m 10 https://api.ipify.org 2>/dev/null; exit 0'
 if ($wslViaClash) { Write-Host "PASS WSL via Clash: $wslViaClash" } else { Write-Host "FAIL WSL cannot reach Clash (Allow LAN / firewall inbound rule?)"; $fail++ }
 
-# Headroom
-$hr = curl.exe --noproxy "*" -s -m 5 http://127.0.0.1:8788/livez
-if ($hr -match 'healthy') { Write-Host "PASS headroom healthy" } else { Write-Host "WARN headroom not running (start: scripts/start-headroom.sh in WSL)" }
+# Agent path: model API must be reachable through Clash (401 = route alive, no tokens spent)
+$anthCode = curl.exe -s -o NUL -w "%{http_code}" -m 10 -x $ClashProxy https://api.anthropic.com/v1/messages -H "x-api-key: killswitch-probe" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d '{"model":"claude-3-5-haiku-20241022","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
+if ($anthCode -eq '401') { Write-Host "PASS model API reachable via Clash" } else { Write-Host "FAIL model API via Clash returned $anthCode"; $fail++ }
 
 # Prod reachable from WSL (deploy path)
 $prod = wsl -d {{WSL_DISTRO}} -u {{WSL_USER}} -- bash -c "timeout 5 bash -c '</dev/tcp/{{PROD_IP}}/22' 2>/dev/null && echo ok; exit 0"

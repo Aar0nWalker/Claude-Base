@@ -2,8 +2,8 @@
 # {{PROJECT_NAME}} killswitch — WSL ({{WSL_DISTRO}}) part. Run as root inside WSL.
 #
 # Blocks all direct outbound internet from the {{WSL_DISTRO}} distro; traffic must go
-# through Clash on the Windows host (private ranges stay open, so the chain
-# codex -> headroom(127.0.0.1:8788) -> clash(172.17.x.x:{{CLASH_PORT}}) keeps working).
+# through Clash on the Windows host (private ranges stay open, so agents in WSL
+# reach clash(172.17.x.x:{{CLASH_PORT}}) as usual).
 # The prod server stays reachable directly (deploy/ssh/rsync).
 #
 # Docker Desktop containers live in the separate docker-desktop distro and are
@@ -38,7 +38,7 @@ apply() {
   $IPT -N $CHAIN 2>/dev/null || $IPT -F $CHAIN
   $IPT -A $CHAIN -o lo -j ACCEPT
   $IPT -A $CHAIN -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-  # Windows host (Clash, DNS, Headroom chain) + any local nets
+  # Windows host (Clash, DNS) + any local nets
   for net in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 169.254.0.0/16; do
     $IPT -A $CHAIN -d "$net" -j ACCEPT
   done

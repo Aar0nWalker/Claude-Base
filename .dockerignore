@@ -1,10 +1,8 @@
 .git
 .agents
 .codex
-.headroom
 .tools
 .venv
-.venv-headroom
 __pycache__
 .pytest_cache
 .mypy_cache

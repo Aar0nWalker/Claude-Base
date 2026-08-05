@@ -24,7 +24,11 @@ search, and narrow reads.
 - The previous SaaS starter (FastAPI + Next.js + auth + admin) is preserved on branch
   **`saas-starter-archive`**. Nothing on `main` depends on it.
 - Layout: base at the root + two optional modules — `modules/bot` (Telegram task queue) and
-  `modules/killswitch` (Clash + Headroom). Either can be deleted whole; the base does not care.
+  `modules/killswitch` (Clash). Either can be deleted whole; the base does not care.
+- **Headroom removed (2026-08-06), mirroring the decision made in the source project.** No
+  compression proxy sits in front of the model API: on a subscription it saved nothing and it
+  dropped words from rule files and tool results. Agents talk to their APIs directly, through
+  Clash when the killswitch is on. Compression stays at the shell-output layer (RTK).
 - The gate is deliberately inert here: this repo has no `scripts/ci/zones/`, so
   `scripts/ci/test-gate.sh` refuses to run. That is the designed behaviour, not a bug — a project
   creates its zones during bootstrap.
