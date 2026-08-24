@@ -23,7 +23,7 @@ A finding is worth promoting into the template when all four hold:
 | How the agent should work | `AGENTS.md` — keep it short, it loads every session |
 | Repeatable procedure | a skill in `.claude/skills/base/` (with a `tools/` script if it repeats) |
 | Something a script can enforce | `scripts/ci/` — a guard beats a paragraph nobody rereads |
-| Claude-only behaviour | `.claude/CLAUDE.md` or a command in `.claude/commands/` |
+| Agent-specific behaviour | `.claude/CLAUDE.md` / `.claude/commands/` or the matching Codex command skill in `.agents/skills/commands/` |
 | A property releases must have | `docs/deploy-contract.md` |
 | A property the gate must have | `docs/test-gate.md` + the runner |
 
@@ -43,6 +43,10 @@ At the end of a project — or whenever something bites twice — ask:
 
 Copy the wording almost verbatim from where it was learned, keeping the concrete example that
 made it obvious — a rule with its scar tissue attached is far easier to apply than an abstraction.
+
+For a reusable skill, update the canonical `.claude/skills/base/<name>/` directory and refresh the
+complete `.agents/skills/base/<name>/` mirror in the same change. A rule available to only one
+agent is not part of this universal template.
 
 ## Reviewing the size
 

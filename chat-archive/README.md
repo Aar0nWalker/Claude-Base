@@ -3,7 +3,8 @@
 Long-term copies of finished agent chats. Everything here except this file is gitignored —
 transcripts stay local and are never shipped or committed.
 
-Filled by the `запакуй` command (`.claude/commands/запакуй.md`): it gzips the session transcript
+Filled by the `запакуй` command (`.claude/commands/запакуй.md` for Claude,
+`.agents/skills/commands/pack-chat/SKILL.md` for Codex): it gzips the session transcript/rollout
 into `chat-<date>-<uuid8>.jsonl.gz`, appends a line to `INDEX.md`, and refreshes
 `SESSION_HANDOFF.md`.
 
@@ -22,7 +23,8 @@ left open. Read it first and open only the archive that matters.
 ## Rules
 
 - No secrets, tokens, PII or long logs in `INDEX.md`.
-- A live session's transcript is also mirrored automatically to `.agents/sessions/` by the Stop
-  hook — that is the working copy; this directory is the long-term one.
+- A live Claude transcript is mirrored automatically to `.agents/sessions/` by the Stop hook;
+  Codex copies its current rollout there when finishing or packing a task. This directory is the
+  long-term archive.
 - When taking a transcript to archive, use YOUR OWN session id (from the scratchpad path), not the
   newest file in the directory: with a second agent working, the newest one is theirs.

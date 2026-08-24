@@ -25,13 +25,20 @@ A skill has 3 layers, not one prompt:
 - At the end of a session where a skill was used (or should have been), ask: "What here should be
   baked into the skill permanently, and what was a one-off fix?"
 
-Folder structure:
+Folder structure and mirror:
 ```
 .claude/skills/base/<name>/
 ├── SKILL.md      # description + instructions
 ├── tools/        # scripts, templates, configs
 └── examples/     # few-shot examples
+
+.agents/skills/base/<name>/      # exact Codex mirror, including tools/examples
 ```
 
 The project skill catalog (and when to load each) is a single list in AGENTS.md → «Rules».
 Load only the one skill relevant to the current task.
+
+After changing a base skill, copy the complete skill directory to `.agents/skills/base/<name>/`
+and compare the two trees. Do not maintain two independently edited versions. Commands are the
+exception: their outcome is shared, but provider-specific session/archive steps may differ; see
+`docs/agent-system.md`.

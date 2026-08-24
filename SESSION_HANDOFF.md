@@ -12,7 +12,8 @@ every edit.
 1. `AGENTS.md` — rules, parallel work, orchestration, quality floor (loads automatically).
 2. This file — the current snapshot and unfinished work.
 3. `PROJECT.md` / `ARCH.md` / `STACK.md` — what we build, how it is shaped, what it is built with.
-4. Only the one skill from `.claude/skills/base/` the task actually needs.
+4. Only the one skill the task needs: `.claude/skills/base/` in Claude or
+   `.agents/skills/base/` in Codex.
 
 Do not scan the whole repository without a reason: `scripts/agents/codemap.sh <file>`, a targeted
 search, and narrow reads.
@@ -32,6 +33,8 @@ search, and narrow reads.
 - The gate is deliberately inert here: this repo has no `scripts/ci/zones/`, so
   `scripts/ci/test-gate.sh` refuses to run. That is the designed behaviour, not a bug — a project
   creates its zones during bootstrap.
+- Shared agent support is documented in `docs/agent-system.md`: Claude and Codex read the same
+  `AGENTS.md`, base skills are mirrored, and both expose the four standard commands.
 
 ## Unfinished (next session)
 
